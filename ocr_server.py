@@ -1461,4 +1461,4 @@ if __name__ == '__main__':
     print("📌 完整功能已启用：部分匹配、5段TM、直接PDF链接")
 
     port = int(os.environ.get('PORT', 3000))
-    app.run(host="0.0.0.0", port=3000, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
