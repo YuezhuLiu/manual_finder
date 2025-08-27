@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Military Manual Finder - Enhanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .processing { animation: pulse 2s infinite; }
+        .success-flash { animation: successFlash 2s ease-out; }
+        
+        @keyframes successFlash {
+            0% { background-color: #f0f9ff; border-color: #3b82f6; }
+            50% { background-color: #dcfce7; border-color: #10b981; }
+            100% { background-color: #f0f9ff; border-color: #3b82f6; }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div class="max-w-6xl mx-auto p-4">
+        <!-- Header -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="bg-blue-600 p-3 rounded-lg">
+                        <span class="text-white text-2xl">🎯</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Military Manual Finder</h1>
+                        <p class="text-gray-600 mt-1">🚀 Enhanced Search - TM Priority + Model Mapping (M200A/P, MEP-1030A, etc.)</p>
+                    </div>
+                </div>
+                <button onclick="clearAll()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                    🔄 Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div id="statusAlert" class="hidden mb-6">
+            <div class="flex items-start gap-3 p-4 rounded-lg">
+                <span id="statusIcon" class="text-xl mt-0.5"></span>
+                <div class="flex-1">
+                    <p id="statusText" class="font-medium"></p>
+                    <button onclick="hideStatus()" class="text-sm opacity-75 hover:opacity-100 mt-1">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- System Status -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-3">
+                        <span class="text-blue-600 text-xl">🖥️</span>
+                        System Status
+                    </h2>
+                    
+                    <div id="serverChecking" class="text-center py-4">
+                        <div class="text-4xl mb-3 processing">🔍</div>
+                        <p class="text-blue-800 font-medium">Checking search system...</p>
+                        <p class="text-blue-600 text-sm mt-1">Connecting to localhost:3000</p>
+                    </div>
+                    
+                    <div id="serverReady" class="hidden text-center py-4">
+                        <div class="text-4xl mb-3">✅</div>
+                        <p class="text-green-700 font-medium">Search System Ready!</p>
+                        <p class="text-green-600 text-sm mt-1" id="serverInfo">Enhanced mapping database enabled</p>
+                    </div>
+                    
+                    <div id="serverError" class="hidden text-center py-4">
+                        <div class="text-4xl mb-3">❌</div>
+                        <p class="text-red-700 font-medium">System Connection Failed</p>
+                        <p class="text-red-600 text-sm mt-1" id="serverErrorDetails">Please ensure server is running on localhost:3000</p>
+                        <button onclick="checkServerStatus()" class="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                            🔄 Retry Connection
+                        </button>
+                    </div>
+
+                    <div id="ocrProcessing" class="hidden">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="text-blue-600 text-xl processing">⚡</span>
+                            <span class="font-semibold text-blue-900">Processing OCR</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span id="progressStatus" class="text-blue-800">Uploading image...</span>
+                                <span id="progressPercent" class="text-blue-600 font-medium">0%</span>
+                            </div>
+                            <div class="w-full bg-blue-200 rounded-full h-2">
+                                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-3">
+                        <span class="text-blue-600 text-xl">📷</span>
+                        Image Upload
+                    </h2>
+                    
+                    <div id="uploadArea" onclick="triggerFileInput()" 
+                         class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group">
+                        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📤</div>
+                        <p class="text-lg font-medium text-gray-700 mb-2">Upload Equipment Nameplate Photo</p>
+                        <p class="text-sm text-gray-500">Supports JPG, PNG formats, max 10MB</p>
+                        <p class="text-xs text-gray-400 mt-2">Click to select file or drag image here</p>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+
+                    <!-- Image Display -->
+                    <div id="imageDisplay" class="mt-6 hidden">
+                        <h3 class="font-semibold text-gray-900 mb-3">📸 Uploaded Image</h3>
+                        <div>
+                            <img id="uploadedImage" class="w-full h-32 object-cover rounded-lg border shadow-sm">
+                        </div>
+                        <button onclick="clearImages()" class="mt-3 text-red-600 hover:text-red-800 text-sm font-medium">
+                            🗑️ Clear Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Equipment Information -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center gap-3">
+                        <span class="text-blue-600 text-xl">📄</span>
+                        Equipment Information
+                    </h3>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                🔋 TM Number (Priority Search)
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="tmInput" placeholder="e.g.: 9-6115-749-10"
+                                       class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                <button onclick="clearInput('tmInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">
+                                    ✕
+                                </button>
+                            </div>
+                            <p class="text-xs text-green-600 mt-1">✅ Will search TM first if provided</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                🏷️ Model Number (Enhanced Mapping)
+                            </label>
+                            <div class="relative">
+                                <input type="text" id="modelInput" placeholder="e.g.: MEP-804A, M200A/P"
+                                       class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                <button onclick="clearInput('modelInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">
+                                    ✕
+                                </button>
+                            </div>
+                            <p class="text-xs text-orange-600 mt-1">⚠️ Used only if TM number not provided</p>
+                        </div>
+                        
+                        <!-- Single Search Button -->
+                        <button onclick="smartSearch()" class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md flex items-center justify-center gap-3 text-lg">
+                            <span>🔍</span>
+                            Enhanced Smart Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Extracted Information -->
+                <div id="extractedInfo" class="hidden bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-3">
+                        <span class="text-green-600 text-xl">✨</span>
+                        Extracted Equipment Information
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Azure OCR</span>
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-900 mb-2">🔋 TM Number</h4>
+                            <p id="extractedTM" class="text-blue-800 font-mono">Not detected</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-900 mb-2">🏷️ Model Number</h4>
+                            <p id="extractedModel" class="text-green-800 font-mono">Not detected</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 bg-gray-50 border border-gray-200 p-3 rounded-lg">
+                        <p class="text-sm text-gray-600">
+                            <span class="font-semibold">Processing Time:</span> <span id="processingTime">-</span> | 
+                            <span class="font-semibold">Recognition Status:</span> <span id="recognitionStatus">Pending</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-3">
+                        <span class="text-blue-600 text-xl">📚</span>
+                        Search Results
+                        <span id="resultCount" class="hidden bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"></span>
+                        <span id="searchMethod" class="hidden bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"></span>
+                    </h2>
+
+                    <div id="noResults" class="text-center py-16 text-gray-500">
+                        <div class="text-6xl mb-6">🔍</div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Ready for Enhanced Search</h3>
+                        <p>Upload equipment nameplate image or enter TM/Model information, then click Enhanced Smart Search</p>
+                        <div class="mt-4 text-sm text-gray-400">
+                            <p>🎯 Automatic TM → Model mapping priority</p>
+                            <p>📚 Enhanced database with M200A/P, MEP series support</p>
+                            <p>⚡ Streaming results display</p>
+                        </div>
+                    </div>
+
+                    <div id="searchResults" class="space-y-6 hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const OCR_SERVER_URL = 'http://localhost:3000';
+        let isServerReady = false;
+
+        // Clear input function
+        function clearInput(inputId) {
+            document.getElementById(inputId).value = '';
+        }
+
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                showServerChecking();
+                
+                const response = await fetch(`${OCR_SERVER_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    isServerReady = true;
+                    showServerReady(data);
+                } else {
+                    throw new Error('Server response error');
+                }
+            } catch (error) {
+                console.error('Server check failed:', error);
+                showServerError(error.message);
+            }
+        }
+
+        // Handle image upload
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!isServerReady) {
+                showStatus('⚠️', 'System not ready, please wait for server startup.', 'warning');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                showStatus('❌', 'Please select a valid image file.', 'error');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showStatus('❌', 'Image file too large, please select an image smaller than 10MB.', 'error');
+                return;
+            }
+
+            clearPreviousResults();
+            showImageDisplay(file);
+            await performOCR(file);
+        }
+
+        // Clear previous results and show searching state
+        function clearPreviousResults() {
+            document.getElementById('tmInput').value = '';
+            document.getElementById('modelInput').value = '';
+            document.getElementById('extractedInfo')?.classList.add('hidden');
+            document.getElementById('searchResults')?.classList.add('hidden');
+            document.getElementById('noResults')?.classList.remove('hidden');
+            document.getElementById('resultCount')?.classList.add('hidden');
+            document.getElementById('searchMethod')?.classList.add('hidden');
+        }
+
+        // Show uploaded image
+        function showImageDisplay(file) {
+            const uploadedImg = document.getElementById('uploadedImage');
+            const imageDisplay = document.getElementById('imageDisplay');
+            
+            if (uploadedImg && imageDisplay) {
+                uploadedImg.src = URL.createObjectURL(file);
+                imageDisplay.classList.remove('hidden');
+            }
+        }
+
+        // Perform OCR
+        async function performOCR(file) {
+            try {
+                console.log('Starting Azure OCR processing...');
+                showOcrProcessing();
+                updateProgress(10, 'Preparing image upload...');
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                updateProgress(30, 'Uploading...');
+
+                const response = await fetch(`${OCR_SERVER_URL}/extract`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                updateProgress(80, 'Processing OCR results...');
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Server processing error');
+                }
+
+                const data = await response.json();
+                console.log('OCR results:', data);
+
+                updateProgress(90, 'Extracting equipment information...');
+
+                showExtractedInfo(data);
+
+                if (data.tm) {
+                    const tmInput = document.getElementById('tmInput');
+                    if (tmInput) {
+                        tmInput.value = data.tm;
+                        tmInput.classList.add('success-flash');
+                        setTimeout(() => tmInput.classList.remove('success-flash'), 2000);
+                    }
+                }
+                
+                if (data.model) {
+                    const modelInput = document.getElementById('modelInput');
+                    if (modelInput) {
+                        modelInput.value = data.model;
+                        modelInput.classList.add('success-flash');
+                        setTimeout(() => modelInput.classList.remove('success-flash'), 2000);
+                    }
+                }
+
+                updateProgress(100, 'OCR Complete!');
+
+                if (data.found) {
+                    showStatus('✅', `Successfully extracted: TM: ${data.tm || 'Not found'}, Model: ${data.model || 'Not found'}`, 'success');
+                    
+                    // Auto search after OCR
+                    setTimeout(() => smartSearch(), 1000);
+                } else {
+                    showStatus('⚠️', 'Could not extract equipment information. Please enter manually.', 'warning');
+                }
+
+                setTimeout(hideOcrProcessing, 3000);
+
+            } catch (error) {
+                console.error('OCR Error:', error);
+                showStatus('❌', 'OCR recognition failed: ' + error.message, 'error');
+                hideOcrProcessing();
+            }
+        }
+
+        // Smart search - main search function with streaming results
+        async function smartSearch() {
+            const tm = document.getElementById('tmInput')?.value.trim() || '';
+            const model = document.getElementById('modelInput')?.value.trim() || '';
+
+            if (!tm && !model) {
+                showStatus('⚠️', 'Please enter TM number or model number.', 'warning');
+                return;
+            }
+
+            // Show searching state immediately
+            showSearchingState(tm, model);
+
+            await performSmartSearch(tm, model);
+        }
+
+        // Show initial searching state with real-time status updates
+        function showSearchingState(tm, model) {
+            let searchStrategy = '';
+            if (tm && model) {
+                searchStrategy = 'TM number priority, model as backup';
+            } else if (tm) {
+                searchStrategy = 'TM number only';
+            } else {
+                searchStrategy = 'Enhanced model search with mapping';
+            }
+
+            const container = document.getElementById('searchResults');
+            const noResults = document.getElementById('noResults');
+            
+            noResults?.classList.add('hidden');
+            container?.classList.remove('hidden');
+            
+            container.innerHTML = `
+                <div class="border border-blue-200 rounded-xl p-6 bg-blue-50 search-status">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-blue-600 text-xl processing">🔍</span>
+                        <span class="font-semibold text-blue-900">Real-time Search in Progress...</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-blue-800"><strong>Strategy:</strong> ${searchStrategy}</p>
+                        <p class="text-blue-700 status-message">Initializing search...</p>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-blue-800">Status</span>
+                                <span class="text-blue-600">Connecting...</span>
+                            </div>
+                            <div class="w-full bg-blue-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300 processing" style="width: 20%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add result to existing results (for streaming)
+        function addSearchResult(result, isFirst = false) {
+            const container = document.getElementById('searchResults');
+            
+            if (isFirst) {
+                container.innerHTML = ''; // Clear searching state
+            }
+            
+            const resultHTML = `
+                <div class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all bg-gradient-to-br from-white to-gray-50">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <h3 class="font-bold text-gray-900 text-lg">${result.title}</h3>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                                    ${result.confidence}% match
+                                </span>
+                                ${result.verified ? 
+                                    '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">✓ Verified</span>' : ''
+                                }
+                                ${result.source ? 
+                                    `<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">${result.source}</span>` : ''
+                                }
+                            </div>
+                            ${result.title_suffix ? `<p class="text-gray-700 mb-4 leading-relaxed">${result.title_suffix}</p>` : ''}
+                            <p class="text-gray-700 mb-4 leading-relaxed">${result.description}</p>
+                        </div>
+                    </div>
+                    ${result.isPdfResult ? `
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-green-600 text-lg">📄</span>
+                                <span class="font-semibold text-gray-900">PDF Manual Found</span>
+                            </div>
+                            <p class="text-gray-700 text-sm">
+                                Direct access to manual. Click "Open PDF" to view in browser.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button onclick="window.open('${result.url}', '_blank')" 
+                                    class="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-md">
+                                <span>📖</span>
+                                Open PDF
+                            </button>
+                            <button onclick="copyToClipboard('${result.url}')" 
+                                    class="bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center justify-center gap-2">
+                                <span>📋</span>
+                                Copy Link
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-blue-600 text-lg">🔍</span>
+                                <span class="font-semibold text-gray-900">Manual Search Required</span>
+                            </div>
+                            <p class="text-gray-700 text-sm">
+                                Click to search manually.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-1 gap-3">
+                            <button onclick="window.open('${result.url}', '_blank')" 
+                                    class="bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-md">
+                                <span>🔍</span>
+                                Search Manually
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            container.innerHTML += resultHTML;
+        }
+
+        // Perform smart search with simplified streaming
+        async function performSmartSearch(tm, model) {
+            try {
+                showStatus('🔍', 'Starting enhanced smart search...', 'info');
+                                
+                // Use fixed streaming endpoint
+                const response = await fetch(`${OCR_SERVER_URL}/search-stream-fixed`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tm: tm,
+                        model: model
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                // Handle Server-Sent Events stream
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let resultCount = 0;
+                let buffer = '';
+
+                console.log('🔄 Starting to read stream...');
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        console.log('✅ Stream reading complete');
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                console.log('📡 Received:', data);
+                                
+                                switch (data.type) {
+                                    case 'start':
+                                        console.log('🚀 Search started');
+                                        break;
+                                        
+                                    case 'status':
+                                        console.log('📊 Status:', data.message);
+                                        updateSearchStatus(data.message);
+                                        break;
+                                        
+                                    case 'result':
+                                        console.log('📄 Got result:', data.data.title);
+                                        addSearchResult(data.data, resultCount === 0);
+                                        resultCount++;
+                                        updateResultCount(resultCount);
+                                        break;
+                                        
+                                    case 'complete':
+                                        console.log('✅ Search complete:', data);
+                                        // 检查是否真的有结果
+                                        if (resultCount > 0 || (data.data && data.data.success)) {
+                                            showStatus('✅', data.message || `Found ${resultCount} manual(s)!`, 'success');
+                                        } else {
+                                            // 只有在真的没有结果时才显示fallback
+                                            showManualSearchFallback(tm, model, 'No results found in databases');
+                                            showStatus('⚠️', 'No direct results found, showing manual search options', 'warning');
+                                        }
+                                        updateSearchMethod('Real-time Stream Search');
+                                        break;
+                                        
+                                    case 'error':
+                                        throw new Error(data.message);
+                                }
+                            } catch (parseError) {
+                                console.warn('Failed to parse SSE data:', parseError, 'Line:', line);
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                console.error('Stream search error:', error);
+                showManualSearchFallback(tm, model, 'Search failed: ' + error.message);
+                showStatus('❌', `Search failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Update search status in real-time
+        function updateSearchStatus(message) {
+            const container = document.getElementById('searchResults');
+            const statusDiv = container.querySelector('.search-status');
+            
+            if (statusDiv) {
+                statusDiv.querySelector('.status-message').textContent = message;
+            }
+        }
+
+        // Update result count
+        function updateResultCount(count) {
+            const resultCount = document.getElementById('resultCount');
+            if (resultCount) {
+                resultCount.textContent = `${count} result${count !== 1 ? 's' : ''}`;
+                resultCount.classList.remove('hidden');
+            }
+        }
+
+        // Update search method indicator
+        function updateSearchMethod(method) {
+            const searchMethod = document.getElementById('searchMethod');
+            if (searchMethod) {
+                searchMethod.textContent = method;
+                searchMethod.classList.remove('hidden');
+            }
+        }
+
+        // Show manual search fallback
+        function showManualSearchFallback(tm, model, reason) {
+            const query = tm ? `TM ${tm}` : model;
+            
+            const fallbackHTML = `
+                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center gap-3">
+                        <span class="text-yellow-600 text-xl">🔍</span>
+                        Manual Search Required
+                    </h3>
+                    
+                    <div class="bg-white border rounded-lg p-4 mb-4">
+                        <p class="text-gray-700 mb-3">
+                            Try these manual searches for "${query}":
+                        </p>
+                        
+                        <div class="grid md:grid-cols-2 gap-3">
+                            <button onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(`${query} filetype:pdf`)}', '_blank')" 
+                                    class="bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
+                                <span>🔍</span>
+                                Google Search
+                            </button>
+                            <button onclick="window.open('https://www.liberatedmanuals.com/search?q=${encodeURIComponent(query)}', '_blank')" 
+                                    class="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2">
+                                <span>📚</span>
+                                Liberated Manuals
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById('searchResults');
+            if (container) {
+                container.innerHTML = fallbackHTML;
+                container.classList.remove('hidden');
+                document.getElementById('noResults')?.classList.add('hidden');
+            }
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showStatus('📋', 'Link copied to clipboard!', 'success');
+            }).catch(() => {
+                showStatus('❌', 'Failed to copy link', 'error');
+            });
+        }
+
+        // UI Helper Functions
+        function showStatus(icon, message, type) {
+            const statusAlert = document.getElementById('statusAlert');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            
+            if (statusAlert && statusIcon && statusText) {
+                statusIcon.textContent = icon;
+                statusText.textContent = message;
+                
+                statusAlert.className = `mb-6 rounded-lg ${
+                    type === 'success' ? 'bg-green-50 border border-green-200' :
+                    type === 'warning' ? 'bg-yellow-50 border border-yellow-200' :
+                    type === 'error' ? 'bg-red-50 border border-red-200' :
+                    'bg-blue-50 border border-blue-200'
+                }`;
+                statusAlert.classList.remove('hidden');
+            }
+        }
+
+        function hideStatus() {
+            document.getElementById('statusAlert')?.classList.add('hidden');
+        }
+
+        function showServerChecking() {
+            document.getElementById('serverChecking')?.classList.remove('hidden');
+            document.getElementById('serverReady')?.classList.add('hidden');
+            document.getElementById('serverError')?.classList.add('hidden');
+        }
+
+        function showServerReady(serverData) {
+            document.getElementById('serverChecking')?.classList.add('hidden');
+            document.getElementById('serverError')?.classList.add('hidden');
+            document.getElementById('serverReady')?.classList.remove('hidden');
+            
+            const serverInfo = document.getElementById('serverInfo');
+            if (serverInfo && serverData) {
+                serverInfo.textContent = `${serverData.service || 'Enhanced Search System'} ready - ${serverData.model_mappings || 0} model mappings loaded`;
+            }
+        }
+
+        function showServerError(message) {
+            document.getElementById('serverChecking')?.classList.add('hidden');
+            document.getElementById('serverReady')?.classList.add('hidden');
+            document.getElementById('serverError')?.classList.remove('hidden');
+            
+            const errorDetails = document.getElementById('serverErrorDetails');
+            if (errorDetails) {
+                errorDetails.textContent = message || 'Please ensure enhanced search server is running on localhost:3000';
+            }
+        }
+
+        function showOcrProcessing() {
+            document.getElementById('serverReady')?.classList.add('hidden');
+            document.getElementById('ocrProcessing')?.classList.remove('hidden');
+        }
+
+        function hideOcrProcessing() {
+            document.getElementById('ocrProcessing')?.classList.add('hidden');
+            document.getElementById('serverReady')?.classList.remove('hidden');
+        }
+
+        function updateProgress(percent, status) {
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressStatus').textContent = status;
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        function showExtractedInfo(data) {
+            document.getElementById('extractedTM').textContent = data.tm || 'Not detected';
+            document.getElementById('extractedModel').textContent = data.model || 'Not detected';
+            document.getElementById('processingTime').textContent = data.processing_time + 's' || '-';
+            document.getElementById('recognitionStatus').textContent = data.found ? 'Recognition successful' : 'Not recognized';
+            document.getElementById('extractedInfo')?.classList.remove('hidden');
+        }
+
+        function triggerFileInput() {
+            if (!isServerReady) {
+                showStatus('⚠️', 'Please wait for system startup to complete.', 'warning');
+                return;
+            }
+            document.getElementById('fileInput')?.click();
+        }
+
+        function clearImages() {
+            document.getElementById('imageDisplay')?.classList.add('hidden');
+            document.getElementById('fileInput').value = '';
+        }
+
+        function clearAll() {
+            document.getElementById('tmInput').value = '';
+            document.getElementById('modelInput').value = '';
+            clearImages();
+            document.getElementById('extractedInfo')?.classList.add('hidden');
+            document.getElementById('searchResults')?.classList.add('hidden');
+            document.getElementById('noResults')?.classList.remove('hidden');
+            document.getElementById('resultCount')?.classList.add('hidden');
+            document.getElementById('searchMethod')?.classList.add('hidden');
+            hideStatus();
+        }
+
+        // Enable drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (isServerReady) {
+                    uploadArea.classList.add('border-blue-400', 'bg-blue-50');
+                }
+            });
+
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('border-blue-400', 'bg-blue-50');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('border-blue-400', 'bg-blue-50');
+                
+                if (!isServerReady) {
+                    showStatus('⚠️', 'Please wait for system startup to complete.', 'warning');
+                    return;
+                }
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        document.getElementById('fileInput').files = files;
+                        handleImageUpload({ target: { files: [file] } });
+                    }
+                }
+            });
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Enhanced Search App loaded, checking system status...');
+            checkServerStatus();
+        });
+
+        // Periodic server health check
+        setInterval(() => {
+            if (!isServerReady) {
+                checkServerStatus();
+            }
+        }, 10000); // Check every 10 seconds if not ready
+    </script>
+</body>
+</html>"><strong>Status:</strong> ${reason}</p>
+                        <p class="text-gray-700 mb-3
