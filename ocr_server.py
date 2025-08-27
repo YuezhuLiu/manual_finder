@@ -1402,6 +1402,15 @@ def list_mappings():
             'error': str(e)
         }), 500
 
+@app.route('/')
+def index():
+    """Serve the main HTML interface"""
+    try:
+        with open('ocr-manual-finder.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return jsonify({"error": "HTML interface not found"}), 404
+    
 if __name__ == '__main__':
     print("🎯 启动增强智能军用手册搜索系统 - 支持部分TM匹配")
     print("\n📋 新功能特性:")
