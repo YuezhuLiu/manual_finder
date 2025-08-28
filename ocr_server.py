@@ -275,7 +275,7 @@ class RealisticManualSearcher:
                     if 'pdf' in content_type:
                         results.append({
                             'url': url,
-                            'title': f"TM {tm_formats['tm_dashed']} - Liberated Manuals",
+                            'title': f"TM {tm_formats['tm_dashed']}",
                             'confidence': 95,
                             'method': 'direct_pdf',
                             'site': 'Liberated Manuals',
@@ -332,10 +332,10 @@ class RealisticManualSearcher:
                                 # 从PDF链接中提取实际的TM号
                                 actual_tm = self.extract_tm_from_url(pdf_href)
                                 if actual_tm:
-                                    title = f"TM {actual_tm} - Radio Nerds"
+                                    title = f"TM {actual_tm}"
                                 else:
                                     actual_tm = tm_formats['tm_dashed']
-                                    title = f"TM {actual_tm} - Radio Nerds"
+                                    title = f"TM {actual_tm}"
                                 
                                 try:
                                     head_response = self.session.head(href, timeout=5)
@@ -376,10 +376,10 @@ class RealisticManualSearcher:
                                                     # 从PDF链接中提取实际的TM号
                                                     actual_tm = self.extract_tm_from_url(pdf_href)
                                                     if actual_tm:
-                                                        title = f"TM {actual_tm} - Radio Nerds"
+                                                        title = f"TM {actual_tm}"
                                                     else:
                                                         actual_tm = tm_formats['tm_dashed']
-                                                        title = f"TM {actual_tm} - Radio Nerds"
+                                                        title = f"TM {actual_tm}"
                                                     
                                                     try:
                                                         pdf_head = self.session.head(pdf_href, timeout=5)
@@ -523,7 +523,7 @@ class RealisticManualSearcher:
                     if 'pdf' in content_type:
                         results.append({
                             'url': url,
-                            'title': f"TM {tm_formats['tm_dashed']} - Combat Index",
+                            'title': f"TM {tm_formats['tm_dashed']}",
                             'confidence': 90,
                             'method': 'direct_pdf',
                             'site': 'Combat Index',
@@ -559,7 +559,7 @@ class RealisticManualSearcher:
                             if response.status_code == 200 and 'pdf' in response.headers.get('content-type', '').lower():
                                 results.append({
                                     'url': url,
-                                    'title': f"TM {tm_formats['tm_dashed']} - {site_name}",
+                                    'title': f"TM {tm_formats['tm_dashed']}",
                                     'confidence': 92,
                                     'method': 'direct_pdf',
                                     'site': site_name,
@@ -596,7 +596,7 @@ class RealisticManualSearcher:
                                     
                                     results.append({
                                         'url': href,
-                                        'title': f"TM {tm_formats['tm_dashed']} - {site_name}",
+                                        'title': f"TM {tm_formats['tm_dashed']}",
                                         'confidence': 85,
                                         'method': 'site_search',
                                         'site': site_name,
@@ -643,7 +643,7 @@ class RealisticManualSearcher:
                                     if head_response.status_code == 200:
                                         results.append({
                                             'url': href,
-                                            'title': f"TM {tm_formats['tm_dashed']} - {site_name}",
+                                            'title': f"TM {tm_formats['tm_dashed']}",
                                             'confidence': 88,
                                             'method': 'site_search',
                                             'site': site_name,
@@ -819,7 +819,7 @@ class RealisticManualSearcher:
                             
                             all_results.append({
                                 'url': href,
-                                'title': f"Manual for {model_number} - Liberated Manuals",
+                                'title': f"Manual for {model_number}",
                                 'confidence': 80,
                                 'method': 'model_search',
                                 'site': 'Liberated Manuals',
@@ -1261,7 +1261,7 @@ def search_stream_fixed():
                                 result['title'] = f"{result['title']} (Mapped from {model_number})"
                                 
                                 formatted_result = {
-                                    'title': result.get('title'),
+                                    'title': result['title'],
                                     'url': result['url'],
                                     'description': f'Found via mapping: {model_number} → TM {tm_num}',
                                     'confidence': result.get('confidence', 85),
@@ -1285,7 +1285,7 @@ def search_stream_fixed():
                         
                         for result in model_results:
                             formatted_result = {
-                                'title': result.get('title', f'Manual for {model_number}'),
+                                'title': result['title'],
                                 'url': result['url'],
                                 'description': result.get('description', f'Found via direct model search'),
                                 'confidence': result.get('confidence', 75),

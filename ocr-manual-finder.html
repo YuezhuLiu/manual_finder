@@ -8,6 +8,16 @@
     <style>
         .processing { animation: pulse 2s infinite; }
         .success-flash { animation: successFlash 2s ease-out; }
+        .touch-target { min-height: 44px; }
+        .compact-badge {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+          line-height: 1.2;
+        }
+        .mobile-btn {
+          min-height: 44px;
+          touch-action: manipulation;
+        }
         
         @keyframes successFlash {
             0% { background-color: #f0f9ff; border-color: #3b82f6; }
@@ -18,30 +28,39 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+        
+        @media (max-width: 640px) {
+            .container-mobile {
+                padding: 1rem;
+            }
+            .mobile-compact {
+              padding: 1rem;
+            }
+            .mobile-text-sm {
+              font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-    <div class="max-w-6xl mx-auto p-4">
+    <div class="max-w-6xl mx-auto p-2 sm:p-4">
         <!-- Header -->
-        <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
-            <div class="flex items-center justify-between flex-wrap gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-600 p-3 rounded-lg">
-                        <span class="text-white text-2xl">🎯</span>
+        <div class="bg-white rounded-xl shadow-lg p-4 lg:p-8 mb-4 lg:mb-8 border border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="flex items-center gap-3 lg:gap-4">
+                    <div class="bg-blue-600 p-2 lg:p-3 rounded-lg">
+                        <span class="text-white text-xl lg:text-2xl">🎯</span>
                     </div>
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Military Manual Finder</h1>
-                        <p class="text-gray-600 mt-1">🚀 Enhanced Search - TM Priority + Model Mapping (M200A/P, MEP-1030A, etc.)</p>
+                        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Military Manual Finder</h1>
                     </div>
                 </div>
-                <button onclick="clearAll()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-                    🔄 Clear All
-                </button>
+
             </div>
         </div>
 
         <!-- Status Display -->
-        <div id="statusAlert" class="hidden mb-6">
+        <div id="statusAlert" class="hidden mb-4 lg:mb-6">
             <div class="flex items-start gap-3 p-4 rounded-lg">
                 <span id="statusIcon" class="text-xl mt-0.5"></span>
                 <div class="flex-1">
@@ -51,33 +70,33 @@
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
             <!-- Left Column -->
-            <div class="lg:col-span-1 space-y-6">
+            <div class="lg:col-span-1 space-y-4 lg:space-y-6">
                 <!-- System Status -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-3">
+                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 border border-gray-200">
+                    <h2 class="text-lg lg:text-xl font-semibold mb-4 flex items-center gap-3">
                         <span class="text-blue-600 text-xl">🖥️</span>
                         System Status
                     </h2>
                     
                     <div id="serverChecking" class="text-center py-4">
-                        <div class="text-4xl mb-3 processing">🔍</div>
-                        <p class="text-blue-800 font-medium">Checking search system...</p>
-                        <p class="text-blue-600 text-sm mt-1">Connecting to localhost:3000</p>
+                        <div class="text-3xl lg:text-4xl mb-3 processing">🔍</div>
+                        <p class="text-blue-800 font-medium text-sm lg:text-base">Checking search system...</p>
+                        <p class="text-blue-600 text-xs lg:text-sm mt-1">Connecting to server</p>
                     </div>
                     
                     <div id="serverReady" class="hidden text-center py-4">
-                        <div class="text-4xl mb-3">✅</div>
-                        <p class="text-green-700 font-medium">Search System Ready!</p>
-                        <p class="text-green-600 text-sm mt-1" id="serverInfo">Enhanced mapping database enabled</p>
+                        <div class="text-3xl lg:text-4xl mb-3">✅</div>
+                        <p class="text-green-700 font-medium text-sm lg:text-base">Search System Ready!</p>
+                        <p class="text-green-600 text-xs lg:text-sm mt-1" id="serverInfo">Enhanced mapping database enabled</p>
                     </div>
                     
                     <div id="serverError" class="hidden text-center py-4">
-                        <div class="text-4xl mb-3">❌</div>
-                        <p class="text-red-700 font-medium">System Connection Failed</p>
-                        <p class="text-red-600 text-sm mt-1" id="serverErrorDetails">Please ensure server is running on localhost:3000</p>
-                        <button onclick="checkServerStatus()" class="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                        <div class="text-3xl lg:text-4xl mb-3">❌</div>
+                        <p class="text-red-700 font-medium text-sm lg:text-base">System Connection Failed</p>
+                        <p class="text-red-600 text-xs lg:text-sm mt-1" id="serverErrorDetails">Please ensure server is running</p>
+                        <button onclick="checkServerStatus()" class="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors touch-target">
                             🔄 Retry Connection
                         </button>
                     </div>
@@ -85,10 +104,10 @@
                     <div id="ocrProcessing" class="hidden">
                         <div class="flex items-center gap-3 mb-3">
                             <span class="text-blue-600 text-xl processing">⚡</span>
-                            <span class="font-semibold text-blue-900">Processing OCR</span>
+                            <span class="font-semibold text-blue-900 text-sm lg:text-base">Processing OCR</span>
                         </div>
                         <div class="space-y-3">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs lg:text-sm">
                                 <span id="progressStatus" class="text-blue-800">Uploading image...</span>
                                 <span id="progressPercent" class="text-blue-600 font-medium">0%</span>
                             </div>
@@ -100,26 +119,26 @@
                 </div>
 
                 <!-- Image Upload -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-3">
+                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 border border-gray-200">
+                    <h2 class="text-lg lg:text-xl font-semibold mb-4 lg:mb-6 flex items-center gap-3">
                         <span class="text-blue-600 text-xl">📷</span>
                         Image Upload
                     </h2>
                     
                     <div id="uploadArea" onclick="triggerFileInput()" 
-                         class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group">
-                        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📤</div>
-                        <p class="text-lg font-medium text-gray-700 mb-2">Upload Equipment Nameplate Photo</p>
-                        <p class="text-sm text-gray-500">Supports JPG, PNG formats, max 10MB</p>
-                        <p class="text-xs text-gray-400 mt-2">Click to select file or drag image here</p>
+                         class="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group">
+                        <div class="text-2xl sm:text-4xl mb-2 sm:mb-4 group-hover:scale-110 transition-transform">📤</div>
+                        <p class="text-base sm:text-lg font-medium text-gray-700 mb-1 sm:mb-2">Upload Equipment Photo</p>
+                        <p class="text-xs sm:text-sm text-gray-500">JPG, PNG - Max 10MB</p>
+                        <p class="text-xs text-gray-400 mt-1 sm:mt-2 hidden sm:block">Click to select or drag image here</p>
                     </div>
                     <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
 
                     <!-- Image Display -->
-                    <div id="imageDisplay" class="mt-6 hidden">
+                    <div id="imageDisplay" class="mt-4 lg:mt-6 hidden">
                         <h3 class="font-semibold text-gray-900 mb-3">📸 Uploaded Image</h3>
                         <div>
-                            <img id="uploadedImage" class="w-full h-32 object-cover rounded-lg border shadow-sm">
+                            <img id="uploadedImage" class="w-full h-24 lg:h-32 object-cover rounded-lg border shadow-sm">
                         </div>
                         <button onclick="clearImages()" class="mt-3 text-red-600 hover:text-red-800 text-sm font-medium">
                             🗑️ Clear Image
@@ -128,20 +147,20 @@
                 </div>
 
                 <!-- Equipment Information -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                    <h3 class="text-xl font-semibold mb-6 flex items-center gap-3">
+                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 border border-gray-200">
+                    <h3 class="text-lg lg:text-xl font-semibold mb-4 lg:mb-6 flex items-center gap-3">
                         <span class="text-blue-600 text-xl">📄</span>
                         Equipment Information
                     </h3>
-                    <div class="space-y-5">
+                    <div class="space-y-4 lg:space-y-5">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                🔋 TM Number (Priority Search)
+                                📋 TM Number (Priority Search)
                             </label>
                             <div class="relative">
                                 <input type="text" id="tmInput" placeholder="e.g.: 9-6115-749-10"
-                                       class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                                <button onclick="clearInput('tmInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">
+                                       class="w-full px-4 py-3 text-base sm:text-sm pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                <button onclick="clearInput('tmInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg touch-target">
                                     ✕
                                 </button>
                             </div>
@@ -153,8 +172,8 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="modelInput" placeholder="e.g.: MEP-804A, M200A/P"
-                                       class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                                <button onclick="clearInput('modelInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">
+                                       class="w-full px-4 py-3 text-base sm:text-sm pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                <button onclick="clearInput('modelInput')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg touch-target">
                                     ✕
                                 </button>
                             </div>
@@ -162,35 +181,38 @@
                         </div>
                         
                         <!-- Single Search Button -->
-                        <button onclick="smartSearch()" class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md flex items-center justify-center gap-3 text-lg">
+                        <button onclick="clearAll()" class="w-full sm:w-auto bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors touch-target">
+                            🔄 Clear All
+                        </button>
+                        <button onclick="smartSearch()" class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md flex items-center justify-center gap-3 text-base sm:text-lg touch-target">
                             <span>🔍</span>
-                            Enhanced Smart Search
+                            <span class="hidden sm:inline">Enhanced </span>Smart Search
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Right Column -->
-            <div class="lg:col-span-2 space-y-6">
+            <div class="lg:col-span-2 space-y-4 lg:space-y-6">
                 <!-- Extracted Information -->
-                <div id="extractedInfo" class="hidden bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center gap-3">
+                <div id="extractedInfo" class="hidden bg-white rounded-xl shadow-lg p-4 lg:p-6 border border-gray-200">
+                    <h3 class="text-lg lg:text-xl font-semibold mb-4 flex flex-wrap items-center gap-3">
                         <span class="text-green-600 text-xl">✨</span>
-                        Extracted Equipment Information
+                        <span>Extracted Equipment Information</span>
                         <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Azure OCR</span>
                     </h3>
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                            <h4 class="font-semibold text-blue-900 mb-2">🔋 TM Number</h4>
-                            <p id="extractedTM" class="text-blue-800 font-mono">Not detected</p>
+                            <h4 class="font-semibold text-blue-900 mb-2">📋 TM Number</h4>
+                            <p id="extractedTM" class="text-blue-800 font-mono text-sm">Not detected</p>
                         </div>
                         <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
                             <h4 class="font-semibold text-green-900 mb-2">🏷️ Model Number</h4>
-                            <p id="extractedModel" class="text-green-800 font-mono">Not detected</p>
+                            <p id="extractedModel" class="text-green-800 font-mono text-sm">Not detected</p>
                         </div>
                     </div>
                     <div class="mt-4 bg-gray-50 border border-gray-200 p-3 rounded-lg">
-                        <p class="text-sm text-gray-600">
+                        <p class="text-xs lg:text-sm text-gray-600">
                             <span class="font-semibold">Processing Time:</span> <span id="processingTime">-</span> | 
                             <span class="font-semibold">Recognition Status:</span> <span id="recognitionStatus">Pending</span>
                         </p>
@@ -198,33 +220,28 @@
                 </div>
 
                 <!-- Search Results -->
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-6 flex items-center gap-3">
+                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 border border-gray-200">
+                    <h2 class="text-lg lg:text-xl font-semibold mb-4 lg:mb-6 flex flex-wrap items-center gap-3">
                         <span class="text-blue-600 text-xl">📚</span>
-                        Search Results
+                        <span>Search Results</span>
                         <span id="resultCount" class="hidden bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"></span>
                         <span id="searchMethod" class="hidden bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"></span>
                     </h2>
 
-                    <div id="noResults" class="text-center py-16 text-gray-500">
-                        <div class="text-6xl mb-6">🔍</div>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Ready for Enhanced Search</h3>
-                        <p>Upload equipment nameplate image or enter TM/Model information, then click Enhanced Smart Search</p>
-                        <div class="mt-4 text-sm text-gray-400">
-                            <p>🎯 Automatic TM → Model mapping priority</p>
-                            <p>📚 Enhanced database with M200A/P, MEP series support</p>
-                            <p>⚡ Streaming results display</p>
-                        </div>
+                    <div id="noResults" class="text-center py-8 lg:py-16 text-gray-500">
+                        <div class="text-4xl lg:text-6xl mb-4 lg:mb-6">🔍</div>
+                        <h3 class="text-base lg:text-lg font-medium text-gray-900 mb-2">Ready for Enhanced Search</h3>
+                        <p class="text-sm lg:text-base">Upload equipment nameplate image or enter TM/Model information, then click Enhanced Smart Search</p>
                     </div>
 
-                    <div id="searchResults" class="space-y-6 hidden"></div>
+                    <div id="searchResults" class="space-y-4 lg:space-y-6 hidden"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const OCR_SERVER_URL = window.location.origin;
+        const OCR_SERVER_URL = "https://web-production-104d0.up.railway.app";
         let isServerReady = false;
 
         // Clear input function
@@ -435,33 +452,26 @@
                 <div class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all bg-gradient-to-br from-white to-gray-50">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-3">
+                            <div class="bg-white rounded-lg shadow-sm p-4">
                                 <h3 class="font-bold text-gray-900 text-lg">${result.title}</h3>
-                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
+                                <div class="flex items-center gap-2 mb-4">
+                                  <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
                                     ${result.confidence}% match
-                                </span>
-                                ${result.verified ? 
+                                  </span>
+                                  ${result.verified ? 
                                     '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">✓ Verified</span>' : ''
-                                }
-                                ${result.source ? 
+                                  }
+                                  ${result.source ? 
                                     `<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">${result.source}</span>` : ''
-                                }
+                                  }
+                                </div>
                             </div>
                             ${result.title_suffix ? `<p class="text-gray-700 mb-4 leading-relaxed">${result.title_suffix}</p>` : ''}
-                            <p class="text-gray-700 mb-4 leading-relaxed">${result.description}</p>
+                            ${result.method==='google_site_search' ? `<p class="text-gray-700 mb-4 leading-relaxed">${result.description}</p>` : ''}
                         </div>
                     </div>
                     ${result.isPdfResult ? `
-                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="text-green-600 text-lg">📄</span>
-                                <span class="font-semibold text-gray-900">PDF Manual Found</span>
-                            </div>
-                            <p class="text-gray-700 text-sm">
-                                Direct access to manual. Click "Open PDF" to view in browser.
-                            </p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-3">
                             <button onclick="window.open('${result.url}', '_blank')" 
                                     class="bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-md">
                                 <span>📖</span>
@@ -817,5 +827,4 @@
         }, 10000); // Check every 10 seconds if not ready
     </script>
 </body>
-</html>"><strong>Status:</strong> ${reason}</p>
-                        <p class="text-gray-700 mb-3
+</html>
