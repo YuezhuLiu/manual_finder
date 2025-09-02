@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from bs4 import BeautifulSoup
+from urllib.parse import quote
 import urllib.parse
 import os
 import time
 import re
 import requests
 import tempfile
+import urllib3
 
 app = Flask(__name__)
 CORS(app, origins=['*'])
@@ -200,6 +202,34 @@ class RealisticManualSearcher:
         # 初始化模型映射器
         self.model_mapper = ModelToTMMapper()
 
+        # 禁用SSL警告（仅对有证书问题的网站）
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    def _make_safe_request(self, url, **kwargs):
+        """
+        安全地发起HTTP请求，自动处理SSL证书问题
+        """
+        try:
+            # 首先尝试正常请求（带SSL验证）
+            response = self.session.get(url, **kwargs)
+            return response
+        except requests.exceptions.SSLError as ssl_error:
+            print(f"  ⚠️ SSL certificate error for {url}: {ssl_error}")
+            print(f"  🔄 Retrying without SSL verification...")
+            
+            # 如果SSL验证失败，跳过验证重试
+            kwargs['verify'] = False
+            try:
+                response = self.session.get(url, **kwargs)
+                print(f"  ✅ Request successful without SSL verification")
+                return response
+            except Exception as retry_error:
+                print(f"  ❌ Request failed even without SSL verification: {retry_error}")
+                raise retry_error
+        except Exception as other_error:
+            print(f"  ❌ Request failed: {other_error}")
+            raise other_error
+
     def format_tm_number(self, tm_number):
         """格式化TM号为不同的模式，支持4段和5段TM号"""
         if not tm_number:
@@ -307,7 +337,7 @@ class RealisticManualSearcher:
                 search_url = f"https://radionerds.com/index.php?search={urllib.parse.quote(query)}&title=Special:Search"
                 print(f"  🔍 MediaWiki search: {search_url}")
                 
-                response = self.session.get(search_url, timeout=15)
+                response = self._make_safe_request(search_url, timeout=15)
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.text, 'html.parser')
                     
